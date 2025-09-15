@@ -93,10 +93,10 @@ export async function processAndEmailDocument({
   teamMembers: string;
   fileName: string;
 }): Promise<{ success: boolean; message: string; extractedData: string | null }> {
-  if (!docFile || !docFile.startsWith("data:application/")) {
+  if (!docFile || !docFile.startsWith("data:")) {
     return {
       success: false,
-      message: "Invalid file format. Please upload a valid .doc file.",
+      message: "Invalid file format. Please upload a valid document.",
       extractedData: null,
     };
   }

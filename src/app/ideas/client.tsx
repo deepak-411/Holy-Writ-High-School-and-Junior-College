@@ -43,10 +43,10 @@ export default function IdeasClient({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      // Common MIME types for .doc files
       const acceptedTypes = [
         "application/msword",
-        "application/vnd.ms-office",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/pdf",
       ];
       if (acceptedTypes.includes(selectedFile.type)) {
         setFile(selectedFile);
@@ -55,7 +55,7 @@ export default function IdeasClient({
         toast({
           variant: "destructive",
           title: "Invalid File Type",
-          description: "Please upload a valid .doc file. .docx is not supported.",
+          description: "Please upload a valid .doc, .docx, or .pdf file.",
         });
         setFile(null);
         setFilePreview(null);
@@ -195,7 +195,7 @@ export default function IdeasClient({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="doc-file">Abstract of Your Ideas (.doc)</Label>
+            <Label htmlFor="doc-file">Abstract of Your Ideas (.doc, .docx, .pdf)</Label>
             {!filePreview ? (
               <label
                 htmlFor="doc-file"
@@ -208,7 +208,7 @@ export default function IdeasClient({
                     drag and drop
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    DOC file only
+                    DOC, DOCX, or PDF file
                   </p>
                 </div>
                 <Input
@@ -216,7 +216,7 @@ export default function IdeasClient({
                   type="file"
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   onChange={handleFileChange}
-                  accept="application/msword,application/vnd.ms-office"
+                  accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
                   required
                 />
               </label>
