@@ -2,25 +2,80 @@
 "use server";
 
 import { extractProjectRemarks } from "@/ai/flows/extract-project-remarks-from-doc";
+import nodemailer from "nodemailer";
 
-// This is a simulated function. In a real-world application, this would use a
-// service like Nodemailer with an SMTP provider, or an email API service like SendGrid or Resend.
 async function sendEmailWithAttachment({
   docFile,
   emailBody,
+  fileName,
 }: {
   docFile: string;
   emailBody: string;
+  fileName: string;
 }) {
-  console.log("--- SIMULATING EMAIL ---");
-  console.log("To: dk201u@gmail.com");
-  console.log("Subject: New Idea Submission");
-  console.log(`Body: ${emailBody}`);
-  console.log("Attachment (first 50 chars):", docFile.substring(0, 50) + '...');
-  // Simulate network delay for sending an email
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log("--- EMAIL SIMULATION COMPLETE ---");
-  return { success: true };
+  const {
+    EMAIL_HOST,
+    EMAIL_PORT,
+    EMAIL_SECURE,
+    EMAIL_USER,
+    EMAIL_PASSWORD,
+    EMAIL_TO,
+  } = process.env;
+
+  if (
+    !EMAIL_HOST ||
+    !EMAIL_PORT ||
+    !EMAIL_USER ||
+    !EMAIL_PASSWORD ||
+    !EMAIL_TO
+  ) {
+    console.error(
+      "Email environment variables are not set. Please check your .env file."
+    );
+    return {
+      success: false,
+      message: "Email service is not configured on the server.",
+    };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: EMAIL_HOST,
+    port: parseInt(EMAIL_PORT, 10),
+    secure: EMAIL_SECURE === "true",
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASSWORD,
+    },
+  });
+
+  const mimeType = docFile.substring(
+    docFile.indexOf(":") + 1,
+    docFile.indexOf(";")
+  );
+  const fileContent = docFile.split("base64,")[1];
+
+  try {
+    await transporter.sendMail({
+      from: `"Holy Writ Ideas" <${EMAIL_USER}>`,
+      to: EMAIL_TO,
+      subject: "New Idea Submission",
+      text: emailBody,
+      html: `<p>${emailBody.replace(/\n/g, "<br>")}</p>`,
+      attachments: [
+        {
+          filename: fileName,
+          content: fileContent,
+          encoding: "base64",
+          contentType: mimeType,
+        },
+      ],
+    });
+    console.log("Email sent successfully");
+    return { success: true, message: "Email sent successfully." };
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return { success: false, message: "Failed to send email." };
+  }
 }
 
 export async function processAndEmailDocument({
@@ -29,12 +84,14 @@ export async function processAndEmailDocument({
   teamName,
   teamLeaderName,
   teamMembers,
+  fileName,
 }: {
   docFile: string;
   className: string;
   teamName: string;
   teamLeaderName: string;
   teamMembers: string;
+  fileName: string;
 }): Promise<{ success: boolean; message: string; extractedData: string | null }> {
   if (!docFile || !docFile.startsWith("data:application/")) {
     return {
@@ -56,10 +113,10 @@ ${teamMembers}
 The attached file is included.
     `;
 
-    // Run extraction and email simulation in parallel
+    // Run extraction and email sending in parallel
     const [extractionResult, emailResult] = await Promise.all([
       extractProjectRemarks({ docFile, className }),
-      sendEmailWithAttachment({ docFile, emailBody }),
+      sendEmailWithAttachment({ docFile, emailBody, fileName }),
     ]);
 
     if (!extractionResult?.extractedData) {
@@ -68,9 +125,11 @@ The attached file is included.
     }
 
     if (!emailResult.success) {
-      // In a real app, you might want to handle this more gracefully,
-      // maybe by queuing the email for a retry.
-      console.warn("Simulated email sending failed but proceeding with success response.");
+      return {
+        success: false,
+        message: emailResult.message || "An unknown error occurred while sending the email.",
+        extractedData: extractionResult.extractedData,
+      };
     }
 
     return {

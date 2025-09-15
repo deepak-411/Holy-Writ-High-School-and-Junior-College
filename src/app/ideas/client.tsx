@@ -70,6 +70,9 @@ export default function IdeasClient({
     setTeamMembers("");
     setFile(null);
     setFilePreview(null);
+    // Reset the file input visually
+    const fileInput = document.getElementById('doc-file') as HTMLInputElement;
+    if(fileInput) fileInput.value = "";
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -97,6 +100,7 @@ export default function IdeasClient({
           teamName,
           teamLeaderName,
           teamMembers,
+          fileName: file.name,
         });
 
         if (result.success) {
@@ -212,7 +216,7 @@ export default function IdeasClient({
                   type="file"
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   onChange={handleFileChange}
-                  accept=".doc"
+                  accept="application/msword,application/vnd.ms-office"
                   required
                 />
               </label>
@@ -230,6 +234,8 @@ export default function IdeasClient({
                   onClick={() => {
                     setFile(null);
                     setFilePreview(null);
+                     const fileInput = document.getElementById('doc-file') as HTMLInputElement;
+                    if(fileInput) fileInput.value = "";
                   }}
                 >
                   <X className="h-4 w-4" />
