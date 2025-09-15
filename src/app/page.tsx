@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import * as Tone from "tone";
@@ -12,8 +12,15 @@ import { ArrowRight } from "lucide-react";
 export default function WelcomePage() {
   const logo = PlaceHolderImages.find((img) => img.id === "holy-writ-logo");
   const background = PlaceHolderImages.find((img) => img.id === "holy-writ-background");
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const playSoundAndSpeak = async () => {
       try {
         await Tone.start();
@@ -38,7 +45,7 @@ export default function WelcomePage() {
         window.speechSynthesis.cancel();
       }
     };
-  }, []);
+  }, [isClient]);
 
   return (
     <main className="relative flex min-h-screen w-full items-center justify-center p-4">
