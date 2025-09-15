@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "holy-writ-logo",
+      "description": "Holy Writ High School and Junior College Logo",
+      "imageUrl": "https://mychildmate.in/AdmissionForm/img/holywritlogo_512_512.png",
+      "imageHint": "school logo"
+    },
+    {
+      "id": "holy-writ-background",
+      "description": "A picture of the Holy Writ High School building",
+      "imageUrl": "https://www.edustoke.com/assets/uploads-new/916b0d49-5b7f-4d79-94c1-a45185516924.jpg",
+      "imageHint": "school building"
+    }
+  ]
 }
