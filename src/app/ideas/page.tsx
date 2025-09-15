@@ -30,6 +30,10 @@ export default function IdeasPage() {
       <main className="container mx-auto max-w-7xl">
         <IdeasClient initialData={schoolData} />
       </main>
+      <footer className="text-center mt-8 text-muted-foreground text-sm">
+        <p>Developer: Deepak Kumar</p>
+        <p>Robotics and AI • Advance Technology</p>
+      </footer>
     </div>
   );
 }
