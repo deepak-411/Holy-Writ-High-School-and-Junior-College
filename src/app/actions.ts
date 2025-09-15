@@ -7,15 +7,15 @@ import { extractProjectRemarks } from "@/ai/flows/extract-project-remarks-from-d
 // service like Nodemailer with an SMTP provider, or an email API service like SendGrid or Resend.
 async function sendEmailWithAttachment({
   docFile,
-  studentInfo,
+  emailBody,
 }: {
   docFile: string;
-  studentInfo: string;
+  emailBody: string;
 }) {
   console.log("--- SIMULATING EMAIL ---");
   console.log("To: dk201u@gmail.com");
   console.log("Subject: New Idea Submission");
-  console.log(`Body: A new idea has been submitted by ${studentInfo}. The attached file is included.`);
+  console.log(`Body: ${emailBody}`);
   console.log("Attachment (first 50 chars):", docFile.substring(0, 50) + '...');
   // Simulate network delay for sending an email
   await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -26,11 +26,15 @@ async function sendEmailWithAttachment({
 export async function processAndEmailDocument({
   docFile,
   className,
-  studentInfo,
+  teamName,
+  teamLeaderName,
+  teamMembers,
 }: {
   docFile: string;
   className: string;
-  studentInfo: string;
+  teamName: string;
+  teamLeaderName: string;
+  teamMembers: string;
 }): Promise<{ success: boolean; message: string; extractedData: string | null }> {
   if (!docFile || !docFile.startsWith("data:application/")) {
     return {
@@ -41,14 +45,26 @@ export async function processAndEmailDocument({
   }
 
   try {
+    const emailBody = `
+A new idea has been submitted.
+Class: ${className}
+Team Name: ${teamName}
+Team Leader: ${teamLeaderName}
+Team Members:
+${teamMembers}
+
+The attached file is included.
+    `;
+
     // Run extraction and email simulation in parallel
     const [extractionResult, emailResult] = await Promise.all([
       extractProjectRemarks({ docFile, className }),
-      sendEmailWithAttachment({ docFile, studentInfo }),
+      sendEmailWithAttachment({ docFile, emailBody }),
     ]);
 
     if (!extractionResult?.extractedData) {
-      throw new Error("AI model failed to extract data from the document.");
+      // We will not treat this as a hard failure, just a warning.
+      console.warn("AI model failed to extract data from the document, but the submission will proceed.");
     }
 
     if (!emailResult.success) {
