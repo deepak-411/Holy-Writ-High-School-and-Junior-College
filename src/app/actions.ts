@@ -101,8 +101,7 @@ export async function processAndEmailDocument({
     };
   }
 
-  try {
-    const emailBody = `
+  const emailBody = `
 A new idea has been submitted.
 Class: ${className}
 Team Name: ${teamName}
@@ -113,38 +112,41 @@ ${teamMembers}
 The attached file is included.
     `;
 
-    // Run extraction and email sending in parallel
-    const [extractionResult, emailResult] = await Promise.all([
-      extractProjectRemarks({ docFile, className }),
-      sendEmailWithAttachment({ docFile, emailBody, fileName }),
-    ]);
+  // First, send the email to ensure the submission is received.
+  const emailResult = await sendEmailWithAttachment({
+    docFile,
+    emailBody,
+    fileName,
+  });
 
-    if (!extractionResult?.extractedData) {
-      // We will not treat this as a hard failure, just a warning.
-      console.warn("AI model failed to extract data from the document, but the submission will proceed.");
-    }
-
-    if (!emailResult.success) {
-      return {
-        success: false,
-        message: emailResult.message || "An unknown error occurred while sending the email.",
-        extractedData: extractionResult.extractedData,
-      };
-    }
-
-    return {
-      success: true,
-      message: "Submission successful! The document has been processed and sent.",
-      extractedData: extractionResult.extractedData,
-    };
-  } catch (error) {
-    console.error("Error in processAndEmailDocument action:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred.";
+  // If email fails, stop everything and report the error.
+  if (!emailResult.success) {
     return {
       success: false,
-      message: `Failed to process document: ${errorMessage}`,
+      message: emailResult.message || "An unknown error occurred while sending the email.",
       extractedData: null,
     };
   }
+
+  // After successful email, try to extract data with the AI model.
+  // We'll wrap this in a try/catch to handle model errors gracefully.
+  let extractionResult: { extractedData: string } | null = null;
+  let extractionError: string | null = null;
+  try {
+    extractionResult = await extractProjectRemarks({ docFile, className });
+  } catch(e) {
+      const error = e as Error;
+      console.warn("AI model failed to extract data from the document:", error.message);
+      extractionError = error.message;
+  }
+  
+  if (!extractionResult?.extractedData) {
+    console.warn("AI model did not return extracted data, but the submission was successful.");
+  }
+
+  return {
+    success: true,
+    message: "Submission successful! The document has been sent.",
+    extractedData: extractionResult?.extractedData || null,
+  };
 }
