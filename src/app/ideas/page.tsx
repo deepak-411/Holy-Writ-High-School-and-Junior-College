@@ -27,7 +27,7 @@ export default function IdeasPage() {
           </p>
         </div>
       </header>
-      <main className="container mx-auto max-w-7xl">
+      <main className="container mx-auto max-w-4xl">
         <IdeasClient initialData={schoolData} />
       </main>
       <footer className="text-center mt-8 text-muted-foreground text-sm">
