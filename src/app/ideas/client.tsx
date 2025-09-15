@@ -43,18 +43,14 @@ export default function IdeasClient({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (
-        selectedFile.type === "application/msword" ||
-        selectedFile.type ===
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
+      if (selectedFile.type === "application/msword") {
         setFile(selectedFile);
         setFilePreview(selectedFile.name);
       } else {
         toast({
           variant: "destructive",
           title: "Invalid File Type",
-          description: "Please upload a valid .doc or .docx file.",
+          description: "Please upload a valid .doc file. .docx is not supported.",
         });
         setFile(null);
         setFilePreview(null);
@@ -190,7 +186,7 @@ export default function IdeasClient({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="doc-file">Abstract of Your Ideas (.doc/.docx)</Label>
+            <Label htmlFor="doc-file">Abstract of Your Ideas (.doc)</Label>
             {!filePreview ? (
               <label
                 htmlFor="doc-file"
@@ -203,7 +199,7 @@ export default function IdeasClient({
                     drag and drop
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    DOC or DOCX file
+                    DOC file only
                   </p>
                 </div>
                 <Input
@@ -211,7 +207,7 @@ export default function IdeasClient({
                   type="file"
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   onChange={handleFileChange}
-                  accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  accept=".doc,application/msword"
                   required
                 />
               </label>
