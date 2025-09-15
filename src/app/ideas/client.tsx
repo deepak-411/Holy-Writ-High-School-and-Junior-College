@@ -43,7 +43,12 @@ export default function IdeasClient({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type === "application/msword") {
+      // Common MIME types for .doc files
+      const acceptedTypes = [
+        "application/msword",
+        "application/vnd.ms-office",
+      ];
+      if (acceptedTypes.includes(selectedFile.type)) {
         setFile(selectedFile);
         setFilePreview(selectedFile.name);
       } else {
@@ -180,7 +185,7 @@ export default function IdeasClient({
               id="team-members"
               value={teamMembers}
               onChange={(e) => setTeamMembers(e.target.value)}
-              placeholder="e.g. John Doe - Class VI, Section A&#x0a;Jane Smith - Class VI, Section B"
+              placeholder="e.g. John Doe - Class VI, Section A\nJane Smith - Class VI, Section B"
               rows={4}
             />
           </div>
@@ -207,7 +212,7 @@ export default function IdeasClient({
                   type="file"
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   onChange={handleFileChange}
-                  accept=".doc,application/msword"
+                  accept=".doc"
                   required
                 />
               </label>
